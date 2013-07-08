@@ -65,10 +65,26 @@ if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+	.option('-u, --url <url_string>', 'URL to web page')
         .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
+if (program.url){
+var sys = require('util'),
+    rest = require('restler');
+        var url = program.url.toString();
+        var getHtml = rest.get(program.url.toString()).on('complete', function(result, response){
+            var htmlfile = 'downloaded_index.html';
+            var file = fs.writeFileSync(htmlfile, result);
+            var checkJson = checkHtmlFile(htmlfile, program.checks);
+            var outJson = JSON.stringify(checkJson, null, 4);
+            console.log(outJson);
+            });
+
+    }    else
+    {
+        var checkJson = checkHtmlFile(program.file, program.checks);
+	var outJson = JSON.stringify(checkJson, null, 4);
+        console.log(outJson);
+    }
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
